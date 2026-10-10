@@ -8,7 +8,7 @@ customer_id VARCHAR(10) PRIMARY KEY,
   city_tier INT NOT NULL,
   signup_date DATE NOT NULL,
   acquisition_source VARCHAR(20) NOT NULL
-, loyalty_tier VARCHAR(10));
+);
 
 CREATE TABLE products(
 product_id VARCHAR(10) PRIMARY KEY,
