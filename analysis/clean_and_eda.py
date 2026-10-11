@@ -1,6 +1,7 @@
 
 import os
 import json
+from itertools import combinations
 import pandas as pd
 
 
@@ -21,6 +22,9 @@ print("Products shape:", products.shape)
 # 2. Standardize payment_method
 # ---------------------------------------------------------
 
+print("\nTask 2: Raw payment_method values BEFORE standardization:")
+print(orders["payment_method"].value_counts(dropna=False))
+
 orders["payment_method"] = (
     orders["payment_method"]
     .astype(str)
@@ -28,7 +32,7 @@ orders["payment_method"] = (
     .str.upper()
 )
 
-print("\nPayment method counts:")
+print("\nPayment method counts AFTER standardization:")
 print(orders["payment_method"].value_counts())
 
 
@@ -139,10 +143,43 @@ duplicate_reconciliation_delta = (
     raw_total_revenue - cleaned_total_revenue
 )
 
+# Independently calculate the value of the five removed duplicate rows
+duplicate_with_products = duplicate_orders.merge(
+    products[["product_id", "price"]],
+    on="product_id",
+    how="left"
+)
+
+duplicate_with_products["order_value"] = (
+    duplicate_with_products["quantity"]
+    * duplicate_with_products["price"]
+    * (
+        1
+        - duplicate_with_products["discount_pct"].fillna(0) / 100
+    )
+)
+
+duplicate_sum = duplicate_with_products["order_value"].sum()
+
+print("\nTask 5: Revenue reconciliation")
 print("Raw total revenue:", round(raw_total_revenue, 2))
+print("Cleaned total revenue:", round(cleaned_total_revenue, 2))
 print(
     "Duplicate reconciliation delta:",
     round(duplicate_reconciliation_delta, 2)
+)
+print(
+    "Independent sum of the 5 duplicate rows:",
+    round(duplicate_sum, 2)
+)
+
+print(
+    f"Reconciliation: Raw revenue of "
+    f"₹{raw_total_revenue:,.2f} minus cleaned revenue of "
+    f"₹{cleaned_total_revenue:,.2f} equals "
+    f"₹{duplicate_reconciliation_delta:,.2f}. "
+    f"This difference is attributable to the five duplicate "
+    f"orders removed."
 )
 
 
@@ -158,23 +195,30 @@ iqr = q3 - q1
 lower_bound = q1 - 1.5 * iqr
 upper_bound = q3 + 1.5 * iqr
 
-quantity_outliers = merged[
+# Create an explicit outlier flag
+merged["is_outlier"] = (
     (merged["quantity"] < lower_bound)
     | (merged["quantity"] > upper_bound)
+)
+
+quantity_outliers = merged[
+    merged["is_outlier"]
 ].copy()
 
-print("\nQuantity IQR:")
+print("\nTask 6: Quantity IQR")
 print("Q1:", q1)
 print("Q3:", q3)
 print("IQR:", iqr)
 print("Lower bound:", lower_bound)
 print("Upper bound:", upper_bound)
 
-print("Quantity outliers:")
+print("\nQuantity outliers with is_outlier flag:")
 print(
-    quantity_outliers[
-        ["order_id", "quantity"]
-    ].to_string(index=False)
+    merged[
+        ["order_id", "quantity", "is_outlier"]
+    ]
+    .query("is_outlier")
+    .to_string(index=False)
 )
 
 
@@ -188,8 +232,23 @@ payment_return_rate = (
     .mul(100)
 )
 
-print("\nReturn rate by payment method:")
+print("\nTask 7: Return rate by payment method:")
 print(payment_return_rate.round(1))
+
+print(
+    "\nHypothesis: COD orders have a higher return rate "
+    "than CARD and UPI orders."
+)
+
+confirmed = (
+    payment_return_rate["COD"]
+    > payment_return_rate.drop("COD").max()
+)
+
+print(
+    "Hypothesis result:",
+    "Confirmed" if confirmed else "Not confirmed"
+)
 
 
 # ---------------------------------------------------------
@@ -206,8 +265,21 @@ segment = (
     )
 )
 
-print("\nPayment method + city tier segmentation:")
+print("\nTask 8: Payment method + city tier segmentation:")
 print(segment.round(1))
+
+highest_risk_key = segment["return_rate_pct"].idxmax()
+highest_risk_rate = segment.loc[
+    highest_risk_key,
+    "return_rate_pct"
+]
+
+print(
+    f"\nHighest-risk segment: "
+    f"{highest_risk_key[0]} + "
+    f"Tier-{highest_risk_key[1]} cities, "
+    f"with a return rate of {highest_risk_rate:.1f}%."
+)
 
 
 # ---------------------------------------------------------
@@ -223,8 +295,47 @@ correlation_columns = [
 
 correlation_matrix = merged[correlation_columns].corr()
 
-print("\nCorrelation matrix:")
+print("\nTask 9: Correlation matrix:")
 print(correlation_matrix.round(3))
+
+
+print("\nCorrelation strength for each pair:")
+
+for col1, col2 in combinations(correlation_columns, 2):
+
+    r = correlation_matrix.loc[col1, col2]
+    strength = abs(r)
+
+    if strength < 0.2:
+        band = "Negligible"
+    elif strength < 0.4:
+        band = "Weak"
+    elif strength < 0.6:
+        band = "Moderate"
+    elif strength < 0.8:
+        band = "Strong"
+    else:
+        band = "Very strong"
+
+    print(
+        f"{col1} vs {col2}: "
+        f"r = {r:.3f}, strength = {band}"
+    )
+
+
+discount_return_corr = correlation_matrix.loc[
+    "discount_pct",
+    "returned"
+]
+
+print(
+    "\nHypothesis: Higher discounts reduce returns."
+)
+
+if abs(discount_return_corr) < 0.2:
+    print("Hypothesis result: Busted")
+else:
+    print("Hypothesis result: Requires further investigation")
 
 
 # ---------------------------------------------------------
@@ -256,11 +367,27 @@ monthly_revenue_corrected = (
     .sum()
 )
 
-print("\nMonthly revenue including quantity outliers:")
+print("\nTask 10: Monthly revenue including quantity outliers:")
 print(monthly_revenue_all.round(2))
 
 print("\nMonthly revenue excluding quantity outliers:")
 print(monthly_revenue_corrected.round(2))
+
+
+print("\nTime-series finding:")
+
+print(
+    "January 2026's apparent revenue lead is inflated "
+    "by two bulk orders: O0011 on 2026-01-28 and "
+    "O0098 on 2026-01-10."
+)
+
+print(
+    f"After excluding these quantity outliers, "
+    f"{monthly_revenue_corrected.idxmax()} is the true "
+    f"peak month, with revenue of "
+    f"₹{monthly_revenue_corrected.max():,.2f}."
+)
 
 
 # ---------------------------------------------------------
@@ -284,22 +411,35 @@ findings = {
         duplicate_reconciliation_delta, 2
     ),
 
+    "duplicate_rows_removed": len(duplicate_orders),
+
+    "duplicate_sum_inr": round(
+        duplicate_sum, 2
+    ),
+
     "return_rate_by_payment": {
         payment: round(rate, 1)
         for payment, rate in payment_return_rate.items()
     },
 
+    "hypothesis_cod_higher_return_rate": (
+        "Confirmed" if confirmed else "Not confirmed"
+    ),
+
     "highest_risk_segment": {
-        "payment_method": "COD",
-        "city_tier": 2,
+        "payment_method": highest_risk_key[0],
+        "city_tier": int(highest_risk_key[1]),
         "return_rate_pct": round(
-            segment.loc[
-                ("COD", 2),
-                "return_rate_pct"
-            ],
+            highest_risk_rate,
             1
         )
     },
+
+    "discount_return_hypothesis": (
+        "Busted"
+        if abs(discount_return_corr) < 0.2
+        else "Requires further investigation"
+    ),
 
     "true_peak_month": {
         "month": true_peak_month,

@@ -138,11 +138,8 @@ March 2026 peak revenue: ₹{findings["true_peak_month"]["revenue_inr"]:,.2f}
         }
 
     except Exception as err:
-        return {
-            "status": "error",
-            "narrative": None,
-            "message": str(err)
-        }
+        print(f"Gemini API unavailable. Using offline fallback. Reason: {err}")
+        return generate_scr_narrative_offline(findings)
 
 
 def check_numeric_accuracy(narrative: str) -> bool:
@@ -180,3 +177,17 @@ def check_numeric_accuracy(narrative: str) -> bool:
     print(f"\nOverall result: {'PASS' if overall else 'FAIL'}")
 
     return overall
+
+
+
+if __name__ == "__main__":
+    with open("narrator/findings.json", "r", encoding="utf-8") as f:
+        findings = json.load(f)
+
+    result = generate_scr_narrative_offline(findings)
+
+    print("===== MAMAEARTH SCR NARRATIVE =====")
+    print(result["narrative"])
+
+    print("\n===== NUMERIC ACCURACY CHECK =====")
+    check_numeric_accuracy(result["narrative"])

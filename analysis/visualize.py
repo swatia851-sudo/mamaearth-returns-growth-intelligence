@@ -115,7 +115,7 @@ bars = plt.bar(
     payment_return_rate.values
 )
 
-plt.title("Return Rate by Payment Method")
+plt.title("COD Has the Highest Return Rate (44.4%)")
 plt.xlabel("Payment Method")
 plt.ylabel("Return Rate (%)")
 
@@ -186,7 +186,9 @@ plt.plot(
     marker="o"
 )
 
-plt.title("Monthly Revenue Trend (Outlier Corrected)")
+plt.title(
+    "March 2026 Is the True Revenue Peak After Outlier Correction"
+)
 plt.xlabel("Month")
 plt.ylabel("Revenue (INR)")
 plt.xticks(rotation=45)

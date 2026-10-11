@@ -1,11 +1,10 @@
-
 # Mamaearth Returns & Growth Intelligence Pipeline
 
 ## Project Overview
 
 This project analyzes Mamaearth order data to understand how product returns affect revenue and margins.
 
-The project uses:
+The pipeline uses:
 
 - SQLite and SQL for relational data storage and reporting
 - Python and Pandas for data cleaning and exploratory analysis
@@ -18,7 +17,7 @@ The project uses:
 ## Project Structure
 
 ```text
-your-repository/
+mamaearth-returns-growth-intelligence/
 ├── data/
 │   ├── customers.csv
 │   ├── products.csv
@@ -38,3 +37,7 @@ your-repository/
 │   ├── generate_narrative.py
 │   └── sample_output.txt
 └── README.md
+
+```
+
+```
