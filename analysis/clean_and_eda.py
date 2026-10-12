@@ -179,7 +179,8 @@ print(
     f"₹{cleaned_total_revenue:,.2f} equals "
     f"₹{duplicate_reconciliation_delta:,.2f}. "
     f"This difference is attributable to the five duplicate "
-    f"orders removed."
+    f"orders removed. Imputing missing discount_pct and rating "
+    f"values does not change the order-value totals."
 )
 
 
@@ -310,12 +311,10 @@ for col1, col2 in combinations(correlation_columns, 2):
         band = "Negligible"
     elif strength < 0.4:
         band = "Weak"
-    elif strength < 0.6:
+    elif strength < 0.7:
         band = "Moderate"
-    elif strength < 0.8:
-        band = "Strong"
     else:
-        band = "Very strong"
+        band = "Strong"
 
     print(
         f"{col1} vs {col2}: "
@@ -382,9 +381,13 @@ print(
     "O0098 on 2026-01-10."
 )
 
+true_peak_month_display = pd.to_datetime(
+    monthly_revenue_corrected.idxmax()
+).strftime("%B %Y")
+
 print(
     f"After excluding these quantity outliers, "
-    f"{monthly_revenue_corrected.idxmax()} is the true "
+    f"{true_peak_month_display} is the true "
     f"peak month, with revenue of "
     f"₹{monthly_revenue_corrected.max():,.2f}."
 )
@@ -450,13 +453,25 @@ findings = {
     },
 
     "outlier_inflated_month": {
-        "month": "2026-01",
+        "month": (
+            monthly_revenue_all
+            .sub(monthly_revenue_corrected, fill_value=0)
+            .idxmax()
+        ),
         "apparent_revenue_inr": round(
-            monthly_revenue_all.loc["2026-01"],
+            monthly_revenue_all.loc[
+                monthly_revenue_all
+                .sub(monthly_revenue_corrected, fill_value=0)
+                .idxmax()
+            ],
             2
         ),
         "corrected_revenue_inr": round(
-            monthly_revenue_corrected.loc["2026-01"],
+            monthly_revenue_corrected.loc[
+                monthly_revenue_all
+                .sub(monthly_revenue_corrected, fill_value=0)
+                .idxmax()
+            ],
             2
         )
     }

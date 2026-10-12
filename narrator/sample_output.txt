@@ -1,15 +1,30 @@
+===== MAMAEARTH SCR NARRATIVE =====
 Situation
-For regional operations and finance teams analyzing Mamaearth's revenue performance, the clean total revenue stands at 97358.3 INR, compared to a raw total revenue of 99860.2 INR, establishing a duplicate reconciliation delta of 2501.9 INR. When reviewing the true peak month, March 2026 recorded a revenue of 20318.9 INR.
+
+Mamaearth's cleaned total revenue is ₹97,358.30, compared with a raw
+total revenue of ₹99,860.20. The payment-method analysis shows that COD
+has a return rate of 44.4%.
 
 Complication
-Data integrity challenges emerged regarding return behaviors and monthly performance reporting. Return rates varied significantly by payment method, with Cash on Delivery (COD) reaching 44.4%, UPI at 18.9%, and CARD at 14.7%. The highest risk segment was identified within Tier 2 cities using COD, carrying a return rate of 54.5%. Additionally, monthly reporting distortions occurred; for January 2021, the apparent revenue was 29582.1 INR, but after correction, the true revenue was 11637.1 INR due to outlier inflation.
+
+The highest-risk segment is COD in Tier-2
+cities, with a return rate of 54.5%. The reconciliation analysis
+also shows a difference of ₹2,501.90, caused by the five duplicate orders
+removed during cleaning.
 
 Resolution
-To protect regional margins and financial accuracy, operations must adjust planning around payment-specific vulnerabilities, particularly targeting the 54.5% return rate in Tier 2 cities for COD orders. Furthermore, finance and ops leads should rely on the cleaned revenue baseline of 97358.3 INR and account for duplicate reconciliation deltas of 2501.9 INR, while ensuring outlier-inflated periods like January 2021 (corrected from 29582.1 INR to 11637.1 INR) are properly adjusted in future forecasting models.
 
-Verified figures from the analysis:
-Cleaned revenue: ₹97,358.30
-COD return rate: 44.4%
-Highest-risk segment return rate: 54.5%
-Duplicate reconciliation delta: ₹2,501.90
-March 2026 peak revenue: ₹20,318.90
+After correcting the data and excluding the quantity outliers, March 2026
+is the true peak month, with revenue of ₹20,318.90. These
+verified figures can be used by the regional operations and finance teams
+for further analysis.
+
+===== NUMERIC ACCURACY CHECK =====
+Numeric accuracy check:
+PASS: Cleaned revenue 97358.30
+PASS: COD return rate 44.4
+PASS: Highest-risk segment 54.5
+PASS: Duplicate delta 2501.90
+PASS: March peak revenue 20318.90
+
+Overall result: PASS

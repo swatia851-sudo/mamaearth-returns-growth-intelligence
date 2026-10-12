@@ -1,6 +1,7 @@
 
 import os
 import json
+from datetime import datetime
 from google import genai
 from google.genai import types
 
@@ -23,7 +24,8 @@ def generate_scr_narrative_offline(findings: dict) -> dict:
     peak = findings["true_peak_month"]
     peak_revenue = peak["revenue_inr"]
 
-    peak_month_name = "March" if peak["month"].endswith("-03") else peak["month"]
+    peak_date = datetime.strptime(peak["month"], "%Y-%m")
+    peak_month_name = peak_date.strftime("%B %Y")
 
     narrative = f"""
 Situation
@@ -42,7 +44,7 @@ removed during cleaning.
 Resolution
 
 After correcting the data and excluding the quantity outliers, {peak_month_name}
-2026 is the true peak month, with revenue of ₹{peak_revenue:,.2f}. These
+is the true peak month, with revenue of ₹{peak_revenue:,.2f}. These
 verified figures can be used by the regional operations and finance teams
 for further analysis.
 """.strip()
@@ -54,17 +56,17 @@ for further analysis.
     }
 
 
-def generate_scr_narrative(findings: dict) -> dict:
-    """
-    Generate an SCR narrative using Gemini.
-    If no API key is available or the API call fails,
-    the caller can use the offline fallback.
-    """
+def call_gemini_scr(findings: dict) -> dict:
+    """Call Gemini and return either a success or error dictionary."""
 
     api_key = os.environ.get("GEMINI_API_KEY")
 
     if not api_key:
-        return generate_scr_narrative_offline(findings)
+        return {
+            "status": "error",
+            "narrative": None,
+            "message": "GEMINI_API_KEY is not configured."
+        }
 
     try:
         client = genai.Client(
@@ -98,29 +100,12 @@ Create an SCR business narrative from these verified findings:
             contents=user_prompt,
             config=types.GenerateContentConfig(
                 system_instruction=system_instruction,
-
-                # Temperature 0.0 is used because this is a factual,
-                # deterministic business report rather than creative writing.
                 temperature=0.0,
-
-                # Explicit output limit required by the assessment.
                 max_output_tokens=500
             )
         )
 
         narrative = response.text
-
-                # Add a verified numeric summary from findings so that
-        # all required assessment figures are preserved exactly.
-        narrative += f"""
-
-Verified figures from the analysis:
-Cleaned revenue: ₹{findings["cleaned_total_revenue_inr"]:,.2f}
-COD return rate: {findings["return_rate_by_payment"]["COD"]:.1f}%
-Highest-risk segment return rate: {findings["highest_risk_segment"]["return_rate_pct"]:.1f}%
-Duplicate reconciliation delta: ₹{findings["duplicate_reconciliation_delta_inr"]:,.2f}
-March 2026 peak revenue: ₹{findings["true_peak_month"]["revenue_inr"]:,.2f}
-"""
 
         tokens = 0
 
@@ -138,8 +123,27 @@ March 2026 peak revenue: ₹{findings["true_peak_month"]["revenue_inr"]:,.2f}
         }
 
     except Exception as err:
-        print(f"Gemini API unavailable. Using offline fallback. Reason: {err}")
-        return generate_scr_narrative_offline(findings)
+        return {
+            "status": "error",
+            "narrative": None,
+            "message": str(err)
+        }
+
+
+def generate_scr_narrative(findings: dict) -> dict:
+    """
+    Generate an SCR narrative using Gemini.
+    If Gemini fails, use the offline fallback and include the error message.
+    """
+
+    gemini_result = call_gemini_scr(findings)
+
+    if gemini_result["status"] == "error":
+        offline_result = generate_scr_narrative_offline(findings)
+        offline_result["message"] = gemini_result["message"]
+        return offline_result
+
+    return gemini_result
 
 
 def check_numeric_accuracy(narrative: str) -> bool:
@@ -184,7 +188,7 @@ if __name__ == "__main__":
     with open("narrator/findings.json", "r", encoding="utf-8") as f:
         findings = json.load(f)
 
-    result = generate_scr_narrative_offline(findings)
+    result = generate_scr_narrative(findings)
 
     print("===== MAMAEARTH SCR NARRATIVE =====")
     print(result["narrative"])

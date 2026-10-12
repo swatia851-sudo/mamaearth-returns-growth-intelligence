@@ -1,5 +1,4 @@
--- Seed data extracted from the completed masai.db database.
--- Generated from the user's actual SQLite database.
+-- Seed data for customers, products and orders.
 
 -- customers: 45 rows
 INSERT INTO customers (customer_id, name, city, city_tier, signup_date, acquisition_source) VALUES ('C001', 'Aarav', 'Mumbai', 1, '2026-01-07', 'Organic');

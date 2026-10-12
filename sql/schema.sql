@@ -1,5 +1,4 @@
--- Schema extracted from the completed masai.db database.
--- Generated from the user's actual SQLite database.
+-- Schema for the Mamaearth capstone: customers, products and orders.
 
 CREATE TABLE customers(
 customer_id VARCHAR(10) PRIMARY KEY,
