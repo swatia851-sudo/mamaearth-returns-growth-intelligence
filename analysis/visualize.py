@@ -112,7 +112,8 @@ plt.figure(figsize=(8, 5))
 
 bars = plt.bar(
     payment_return_rate.index,
-    payment_return_rate.values
+    payment_return_rate.values,
+    color=["orange", "green", "blue"]
 )
 
 plt.title("COD Has the Highest Return Rate (44.4%)")
