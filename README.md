@@ -44,6 +44,19 @@ mamaearth-returns-growth-intelligence/
 
 ## Setup and Run Instructions
 
+### Prerequisites
+
+- Python 3.10 or later
+- Required Python libraries: `pandas`, `matplotlib`, and `google-genai`
+
+Install the libraries by running:
+
+```bash
+pip install pandas matplotlib google-genai
+```
+
+For Gemini-powered narrative generation, configure your Gemini API key as the `GEMINI_API_KEY` environment variable. If the key is unavailable or Gemini fails, the offline fallback can generate the narrative.
+
 ### 1. Clone the repository
 
 Clone the GitHub repository and open the project folder.
