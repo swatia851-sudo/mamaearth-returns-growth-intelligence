@@ -40,7 +40,6 @@ mamaearth-returns-growth-intelligence/
 
 ```
 
-```
 
 
 ## Setup and Run Instructions
