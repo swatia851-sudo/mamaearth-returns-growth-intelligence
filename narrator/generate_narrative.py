@@ -129,7 +129,7 @@ Create an SCR business narrative from these verified findings:
         ):
             raise ValueError("Gemini returned an incomplete SCR narrative.")
 
-        if not check_numeric_accuracy(narrative):
+        if not check_numeric_accuracy(narrative, verbose=False):
             raise ValueError("Gemini narrative failed numeric accuracy checks.")
 
         tokens = 0
@@ -172,7 +172,7 @@ def generate_scr_narrative(findings: dict) -> dict:
     return gemini_result
 
 
-def check_numeric_accuracy(narrative: str) -> bool:
+def check_numeric_accuracy(narrative: str, verbose: bool = True) -> bool:
     """
     Check the five required figures from the assessment.
     """
@@ -197,17 +197,15 @@ def check_numeric_accuracy(narrative: str) -> bool:
             ("20318.90" in normalized or "20318.9" in normalized)
     }
 
-    print("Numeric accuracy check:")
-
-    for name, passed in checks.items():
-        print(f"{'PASS' if passed else 'FAIL'}: {name}")
-
     overall = all(checks.values())
 
-    print(f"\nOverall result: {'PASS' if overall else 'FAIL'}")
+    if verbose:
+        print("Numeric accuracy check:")
+        for name, passed in checks.items():
+            print(f"{'PASS' if passed else 'FAIL'}: {name}")
+        print(f"\nOverall result: {'PASS' if overall else 'FAIL'}")
 
     return overall
-
 
 
 if __name__ == "__main__":
