@@ -213,9 +213,46 @@ if __name__ == "__main__":
         findings = json.load(f)
 
     result = generate_scr_narrative(findings)
+    narrative = result["narrative"]
 
     print("===== MAMAEARTH SCR NARRATIVE =====")
-    print(result["narrative"])
+    print(narrative)
 
     print("\n===== NUMERIC ACCURACY CHECK =====")
-    check_numeric_accuracy(result["narrative"])
+    accuracy_passed = check_numeric_accuracy(narrative)
+
+    # Save the latest narrative and accuracy report to sample_output.txt
+    output_lines = [
+        "===== MAMAEARTH SCR NARRATIVE =====",
+        narrative,
+        "",
+        "===== NUMERIC ACCURACY CHECK ====="
+    ]
+
+    normalized = narrative.replace(",", "")
+    checks = {
+        "Cleaned revenue 97358.30":
+            "97358.30" in normalized or "97358.3" in normalized,
+        "COD return rate 44.4":
+            "44.4" in normalized,
+        "Highest-risk segment 54.5":
+            "54.5" in normalized,
+        "Duplicate delta 2501.90":
+            "2501.90" in normalized or "2501.9" in normalized,
+        "March peak revenue 20318.90":
+            "March" in narrative and
+            ("20318.90" in normalized or "20318.9" in normalized)
+    }
+
+    output_lines.append("Numeric accuracy check:")
+    for name, passed in checks.items():
+        output_lines.append(f"{'PASS' if passed else 'FAIL'}: {name}")
+
+    output_lines.append(
+        f"\nOverall result: {'PASS' if accuracy_passed else 'FAIL'}"
+    )
+
+    with open("narrator/sample_output.txt", "w", encoding="utf-8") as f:
+        f.write("\n".join(output_lines) + "\n")
+
+    print("\nSample output saved to narrator/sample_output.txt")

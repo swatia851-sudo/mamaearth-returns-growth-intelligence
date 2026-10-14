@@ -1,23 +1,12 @@
 ===== MAMAEARTH SCR NARRATIVE =====
 Situation
-
-Mamaearth's cleaned total revenue is ₹97,358.30, compared with a raw
-total revenue of ₹99,860.20. The payment-method analysis shows that COD
-has a return rate of 44.4%.
+During our recent financial review, we analyzed our revenue and return performance to support regional operations and finance planning. Before cleaning, the raw total revenue stood at INR 99,860.2. After identifying and removing 5 duplicate rows totaling INR 2,501.9 (the duplicate reconciliation delta being INR 2,501.9), our cleaned total revenue was established at INR 97,358.3. Additionally, our temporal analysis revealed that March 2026 was the true peak month, generating INR 20,318.9 in revenue. This contrasted with January 2026, which initially appeared as an outlier-inflated month with an apparent revenue of INR 29,582.1 before correcting down to a corrected revenue of INR 11,637.1.
 
 Complication
-
-The highest-risk segment is COD in Tier-2
-cities, with a return rate of 54.5%. The reconciliation analysis
-also shows a difference of ₹2,501.90, caused by the five duplicate orders
-removed during cleaning.
+Operational risks surrounding payment methods and returns required deeper investigation. Our analysis confirmed the hypothesis that Cash on Delivery (COD) carries a higher return rate, with an overall return rate by payment method of 14.7% for CARD, 44.4% for COD, and 18.9% for UPI. Further segmentation identified the highest-risk segment within our customer base: COD orders in Tier 2 cities, which suffer from a severe return rate of 54.5%. However, our initial assumption regarding discounts was disproven, as the discount return hypothesis was busted.
 
 Resolution
-
-After correcting the data and excluding the quantity outliers, March 2026
-is the true peak month, with revenue of ₹20,318.90. These
-verified figures can be used by the regional operations and finance teams
-for further analysis.
+To protect regional margins and optimize fulfillment, operations and finance must coordinate to address the vulnerability in our high-risk segments. Given that COD payment methods drive a 44.4% return rate—surging to 54.5% specifically in Tier 2 cities—regional ops should implement targeted interventions to curb these specific COD returns. Meanwhile, finance can adjust forward-looking models using the cleaned baseline revenue of INR 97,358.3 and the verified peak performance seen in March 2026 (INR 20,318.9), ensuring that discount strategies are decoupled from return-rate assumptions given that the discount return hypothesis was busted.
 
 ===== NUMERIC ACCURACY CHECK =====
 Numeric accuracy check:
