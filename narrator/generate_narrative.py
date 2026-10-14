@@ -102,7 +102,7 @@ Create an SCR business narrative from these verified findings:
         for attempt in range(3):
             try:
                 response = client.models.generate_content(
-                    model="gemini-3.6-flash",
+                    model="gemini-3.5-flash-lite",
                     contents=user_prompt,
                     config=types.GenerateContentConfig(
                         system_instruction=system_instruction,
