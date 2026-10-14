@@ -1,6 +1,8 @@
 
 import os
 import json
+import time
+import random
 from datetime import datetime
 from google import genai
 from google.genai import types
@@ -71,7 +73,7 @@ def call_gemini_scr(findings: dict) -> dict:
     try:
         client = genai.Client(
             api_key=api_key,
-            http_options=types.HttpOptions(timeout=30000)
+            http_options=types.HttpOptions(timeout=60000)
         )
 
         system_instruction = """
@@ -95,17 +97,40 @@ Create an SCR business narrative from these verified findings:
 {json.dumps(findings, indent=2)}
 """
 
-        response = client.models.generate_content(
-            model="gemini-3.5-flash-lite",
-            contents=user_prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=system_instruction,
-                temperature=0.0,
-                max_output_tokens=500
-            )
-        )
+        response = None
 
-        narrative = response.text
+        for attempt in range(3):
+            try:
+                response = client.models.generate_content(
+                    model="gemini-3.6-flash",
+                    contents=user_prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=system_instruction,
+                        temperature=0.0,
+                        max_output_tokens=500
+                    )
+                )
+                break
+            except Exception:
+                if attempt == 2:
+                    raise
+                wait_seconds = (2 ** attempt) + random.random()
+                print(f"Gemini request failed; retrying in {wait_seconds:.1f} seconds...")
+                time.sleep(wait_seconds)
+
+        narrative = (response.text or "").strip()
+
+        if not narrative:
+            raise ValueError("Gemini returned an empty narrative.")
+
+        if not all(
+            section in narrative
+            for section in ["Situation", "Complication", "Resolution"]
+        ):
+            raise ValueError("Gemini returned an incomplete SCR narrative.")
+
+        if not check_numeric_accuracy(narrative):
+            raise ValueError("Gemini narrative failed numeric accuracy checks.")
 
         tokens = 0
 
@@ -140,6 +165,7 @@ def generate_scr_narrative(findings: dict) -> dict:
 
     if gemini_result["status"] == "error":
         offline_result = generate_scr_narrative_offline(findings)
+        offline_result["status"] = "offline_fallback"
         offline_result["message"] = gemini_result["message"]
         return offline_result
 

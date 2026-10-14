@@ -63,9 +63,25 @@ Clone the GitHub repository and open the project folder.
 
 ### 2. Run the SQL layer
 
-Execute `sql/schema.sql` to create the database tables and `sql/seed_data.sql` to load the data.
+The SQL scripts use SQLite. Make sure the SQLite command-line tool is installed before running these commands.
 
-Then run `sql/reports.sql` to generate the required SQL reports.
+From the project root, start a fresh database:
+
+```bash
+sqlite3 mamaearth.db
+```
+
+Inside the SQLite prompt, run these commands in order:
+
+```sql
+.read sql/schema.sql
+.read sql/seed_data.sql
+.read sql/reports.sql
+```
+
+`schema.sql` creates the tables, `seed_data.sql` loads the data, and `reports.sql` runs the required SQL reports.
+
+Use a fresh database for each full run. Running `reports.sql` again on the same database may fail because the `loyalty_tier` column already exists.
 
 ### 3. Run the Python analysis layer
 
